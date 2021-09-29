@@ -86,11 +86,20 @@ A good goal to aim for is the top rubric item from proposal grading:
 
 > Fully functional proof-of-concept is easy to use and review, and it clearly demonstrates a key element necessary for the overall project.
 
-### How we should be able to test/run your code: Haskell
+### How to test and run the code: Haskell
 
-Instructions coming soon.
+Replace this section with instructions to us for how to test and run your code.
 
-### How we should be able to test/run your code: Prolog
+Note: We expect to be able to test your code by running `stack test`. Included among your tests should be some that demonstrate the core functionality of your code.
 
-Instructions coming soon.
+We should be able to further explore your code's functionality by running `stack ghci`, and you should instruct us on some interesting cases to try.
+
+If you include instructions different from these, be **absolutely sure** that they will work well for us in whatever environment we run your code and that they will be as easy to use as the instructions above!
+
+### How to test and run the code: Prolog
+
+Replace this section with instructions to us for how to test and run your code.
+
+Instructions coming soon, but we expect you'll use the [Prolog Unit Testing](https://www.swi-prolog.org/pldoc/doc_for?object=section(%27packages/plunit.html%27)) library for testing and that we'll be able to run your code with `swipl`.
+
 
