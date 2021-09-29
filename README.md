@@ -90,7 +90,9 @@ A good goal to aim for is the top rubric item from proposal grading:
 
 Replace this section with instructions to us for how to test and run your code.
 
-Note: We expect to be able to test your code by running `stack test`. Included among your tests should be some that demonstrate the core functionality of your code.
+As it is currently set up, editing works best if you first `cd` into the `haskell` subdirectory and open VS Code on that directory (`code .`). There is a `Makefile` with some helpful aliases, but you can also just use `stack` as normal.
+
+Note: We expect to be able to test your code by running `stack test`. Included among your tests should be some that demonstrate the core functionality of your code. (We will be running `make haskell-eval` from the project root.)
 
 We should be able to further explore your code's functionality by running `stack ghci`, and you should instruct us on some interesting cases to try.
 
