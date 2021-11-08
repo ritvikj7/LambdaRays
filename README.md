@@ -102,6 +102,8 @@ If you include instructions different from these, be **absolutely sure** that th
 
 Replace this section with instructions to us for how to test and run your code.
 
-We have set up a simple test file for you to extend using [Prolog Unit Testing](https://www.swi-prolog.org/pldoc/doc_for?object=section(%27packages/plunit.html%27)) library for testing. Included among your tests should be some that demonstrate the core functionality of your code. (We will be running `make prolog-eval` from the project root.)
+We have set up a simple test file for you to extend using [Prolog Unit Testing](https://www.swi-prolog.org/pldoc/doc_for?object=section(%27packages/plunit.html%27)) library for testing. Included among your tests should be some that demonstrate the core functionality of your code. Please remove the example tests before you submit or you will lose marks. (We will be running `make prolog-eval` from the project root.)
+
+You can also load the test file into the swipl repl with `make test-repl` and in that repl you can run `run_tests.` to run those tests.
 
 If you include instructions different from these, be **absolutely sure** that they will work well for us in whatever environment we run your code and that they will be as easy to use as the instructions above!
