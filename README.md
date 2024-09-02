@@ -14,7 +14,7 @@ This will be replaced with a very brief (one paragraph, 2-3 sentences) overview 
 
 Leave the following sentence in so you can easily link back to the requirements and *especially* rubric while editing your project:
 
-This project is in fulfillment of the [CPSC 312 2021W1 project requirements](https://steven-wolfman.github.io/cpsc-312-website/project.html).
+This project is in fulfillment of the [CPSC 312 2024W1 project requirements](https://steven-wolfman.github.io/cpsc-312-website-2024W1/project.html).
 
 ## Team Members
 
@@ -22,8 +22,9 @@ Our team is:
 
 + Team Member Name 1 (student # 1): optional awesome nickname 1
 + Team Member Name 2 (student # 2): optional awesome nickname 2
-+ If you have a third member: Team Member Name 3 (student # 3): optional awesome nickname 3
++ Team Member Name 3 (student # 3): optional awesome nickname 3
 + If you have a fourth member: Team Member Name 4 (student # 4): optional awesome nickname 4
++ If you have a fifth member: Team Member Name 5 (student # 5): optional awesome nickname 5
 
 We call ourselves: optional awesome team name.
 
@@ -34,7 +35,7 @@ would like like as a complete product, ready for awesome action. (Yes, awesomene
 It may be as short as a couple of paragraphs, or it may be longer. It should **definitely** take less than 4 minutes
 to read carefully and thoroughly.
 
-Be sure that this touches clearly on the [project requirements](https://steven-wolfman.github.io/cpsc-312-website/project.html#project-requirements).
+Be sure that this touches clearly on the [project requirements](https://steven-wolfman.github.io/cpsc-312-website-2024W1/project.html#project-requirements).
 
 Good goals to aim for are from the top two rubric items for proposal grading:
 
