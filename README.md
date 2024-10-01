@@ -28,6 +28,14 @@ Our team is:
 
 We call ourselves: optional awesome team name.
 
+## Acknowledgments
+
+We surely built on the work of others! Here are resources and people we got support from:
+
++ A list of acknowledgments with a brief explanation of support received, e.g.:
+  "We used Github Copilot extensively to generate first-pass implementations of chunks of the project that we had specified.
+  We then manually adjusted and adapted these to our needs."
+
 ## Product Pitch
 
 Replace this with a pitch for your project and the problem it solves. This is your vision for what the project
