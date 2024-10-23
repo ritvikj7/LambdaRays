@@ -16,6 +16,7 @@ Our team is:
 
 We call ourselves: **The Good, The Bad, The Ugly**.
 
+---
 ## Acknowledgments
 
 We surely built on the work of others! Here are resources and people we got support from:
@@ -28,6 +29,7 @@ We surely built on the work of others! Here are resources and people we got supp
 - https://github.com/ssloy/tinyraytracer/wiki/Part-1:-understandable-raytracing#understandable-raytracing-in-256-lines-of-bare-c: This wiki article gave the initial inspiration and knowledge for tackling a raytracer program
 
 
+---
 
 ## Product Pitch
 
@@ -58,6 +60,7 @@ LambdaRays provides us with an opportunity to explore one of the frontiers in th
 
 (It's easy to focus on the product and not the problem. Remember to include both!)
 
+---
 ## Minimal Viable Project
 
 For our MVP, we will focus on the core elements and foundantion of a ray tracer that allows us to render images and scene geometry. The MVP will consist of the following key features:
@@ -76,7 +79,7 @@ A strength of Haskell is that it lends itself very well to deterministic paralle
 
 Another strength of Haskell is of its very expressive type system. With ADTs, Records, type classes, it allows us to have expressive computations involving different mathematical objects like Vectors. One of my main gripes with working on a language like Java and C, is the lack of expressiveness with types. For example, doing vector addition would necessitate going through a `vector_add` method or function which really hurts code consiceness. With Haskell's type classes, you could just implement a Vector as part of the Num type class and get (+),(-), etc. operations for free, significantly improving code conciseness and expressiveness. On top of that, Haskell's strong typing will have help us catch bugs more easier which is all too prevalent (and hard to find) in graphics code, so it's also a very suitable choice here.
 
-
+---
 ## Proof of Concept
 
 Our proof-of-concept demonstrates very basic raycasting behaviour, which is one step below ray tracing. It simulates
@@ -94,6 +97,7 @@ This is important because it tells us whether the bare principles behind raytrac
 ### **How completing this gives you confidence that, with sufficient work, you could complete the full (minimal viable) project**
 After completing the proof-of-concept, we don't have many doubts that we could accomplish the full MVP specifications that we set for ourselves in this project. The hardest changes will be the shift from taking our framebuffer contents and applying them to an image instead of the terminal (no more `putStrLn` but rather a simple PPM image through the HIP library). We think the hardest part will definitely be support for proper shading and shadow rays, however, we think we have the fundamental idea of shooting rays down which will invariably help us with those components.
 
+---
 ## How to test and run the code: Haskell
 **To run the code:**
 - cd into the haskell directory
