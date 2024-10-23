@@ -4,7 +4,14 @@
 
 module Lib
     ( someFunc,
-    Vec3(..)
+      Vec3(..),
+      (*^),
+      (*.),
+      dot,
+      cross,
+      vecLength,
+      vecDistance,
+      vecNormalize
     ) where
 
 someFunc :: Vec3 -> IO () --Vec3 -> IO ()
@@ -138,6 +145,14 @@ scalar *^ (Vec3f x y z) = Vec3f (scalar*x) (scalar*y) (scalar*z)
 -- Dot product
 dot :: Vec3 -> Vec3 -> Float
 dot (Vec3f x1 y1 z1) (Vec3f x2 y2 z2) = x1 * x2 + y1 * y2 + z1 * z2
+
+-- Cross product
+cross :: Vec3 -> Vec3 -> Vec3
+cross (Vec3f x1 y1 z1) (Vec3f x2 y2 z2) =
+    Vec3f (y1 * z2 - z1 * y2)
+          (z1 * x2 - x1 * z2)
+          (x1 * y2 - y1 * x2)
+
 
 vecDistance :: Vec3 -> Vec3 -> Float
 vecDistance v1 v2 = sqrt (v1 `dot` v2)
