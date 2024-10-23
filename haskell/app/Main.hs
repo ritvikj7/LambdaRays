@@ -12,10 +12,10 @@ doAnimation v = do
   hFlush stdout -- Immediately print to screen
   move <- timeout 50000 getChar
   case move of
-    (Just 'w') -> do doAnimation (v + (Vec3f 1.0 0.0 0.0))
-    (Just 's') -> do doAnimation (v + (Vec3f (-1.0) 0.0 0.0))
-    (Just 'a') -> do doAnimation (v + (Vec3f 0.0 1.0 0.0))
-    (Just 'd') -> do doAnimation (v + (Vec3f 0.0 (-1.0) 0.0))
+    (Just 'a') -> do doAnimation (v + (Vec3f 1.0 0.0 0.0))
+    (Just 'd') -> do doAnimation (v + (Vec3f (-1.0) 0.0 0.0))
+    (Just 's') -> do doAnimation (v + (Vec3f 0.0 1.0 0.0))
+    (Just 'w') -> do doAnimation (v + (Vec3f 0.0 (-1.0) 0.0))
     _ -> do doAnimation v
 
 
