@@ -11,7 +11,9 @@ module Lib
       cross,
       vecLength,
       vecDistance,
-      vecNormalize
+      vecNormalize,
+      SphereRecord(..),  -- Export SphereRecord and all its constructors
+      intersect          -- Export the intersect function
     ) where
 
 someFunc :: Vec3 -> IO () --Vec3 -> IO ()
