@@ -104,7 +104,6 @@ After completing the proof-of-concept, we don't have many doubts that we could a
 - open VS Code on that directory (code .)
 - run the following commands
   -
-  - `stack install JuicyPixels`
   - `stack build`
   - `stack run`
 

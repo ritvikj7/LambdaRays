@@ -72,7 +72,7 @@ shadeNonMetalSphere (normal, sphere, hitPoint) = let shadowRay = vecNormalize ((
                                                      specular = (kS * ((max (dot normal half) 0.0) ** 32.0)) *^ lightColor
 
                                                      (Vec3f cx cy cz) = ambient + diffuse + specular
-                                                 in (Vec3f (min cx 1.0) (min cy 1.0) (min cz 1.0))
+                                                 in (Vec3f (min cx 1.0) (min cy 1.0) (min cz 1.0)) -- Change from clamp tonemapper to filmic tonemapper if get HDR elements
 
 samplePixel :: (Int, Int) -> Int -> Vec3
 samplePixel _ 0 = Vec3f 0.0 0.0 0.0
