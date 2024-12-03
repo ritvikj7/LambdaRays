@@ -4,6 +4,7 @@
 
 module Lib
     ( someFunc,
+      someFunc2,
       Vec3(..),
       (*^),
       (*.),
@@ -18,16 +19,28 @@ module Lib
 
 import Debug.Trace (trace)
 import Codec.Picture
+import qualified Data.Vector as V
+import System.Random
+import System.IO.Unsafe (unsafePerformIO)
 
 someFunc :: Vec3 -> IO () --Vec3 -> IO ()
-someFunc = render --putStrLn "someFunc" --v3 = putStrLn (show v3 ++ " " ++ "someFunc")
+someFunc = renderStringFB --putStrLn "someFunc" --v3 = putStrLn (show v3 ++ " " ++ "someFunc")
+
+someFunc2 :: Vec3 -> IO ()
+someFunc2 = render
+
+-- Sampling information --
+spp :: Int
+spp = 5
+
+-- Camera data --
 
 -- TODO: Add FOV support
 aspectRatio :: Float
 aspectRatio = 16.0 / 9.0
 
 imgWidth :: Int
-imgWidth = 150
+imgWidth = 400
 
 imgHeight :: Int
 imgHeight = let h = ((fromIntegral imgWidth) / aspectRatio) in
@@ -40,7 +53,7 @@ imgVecWidth :: Vec3
 imgVecWidth = Vec3f (fromIntegral imgWidth) 0.0 0.0
 
 imgVecHeight :: Vec3
-imgVecHeight = Vec3f 0.0 ((-1) * fromIntegral imgHeight) 0.0
+imgVecHeight = Vec3f 0.0 ((-1.0) * fromIntegral imgHeight) 0.0
 
 imgVecX :: Vec3
 imgVecX = vecNormalize imgVecWidth
@@ -84,67 +97,151 @@ imgOriginPixelEdge = cameraPos + cameraNormal + ((-0.5) *^ imgViewW) + ((-0.5) *
 imgOriginPixelCenter :: Vec3
 imgOriginPixelCenter = imgOriginPixelEdge + (0.5 *^ imgViewX) + (0.5 *^ imgViewY)
 
-generateZeroedPixelArr :: Int -> Int -> [Char]
-generateZeroedPixelArr w h = [' ' | _ <- [1..(w*h)]]
+computeImgOriginPixelCenter :: Vec3 -> Vec3
+computeImgOriginPixelCenter newCamPos = (newCamPos + cameraNormal + ((-0.5) *^ imgViewW) + ((-0.5) *^ imgViewH)) + (0.5 *^ imgViewX) + (0.5 *^ imgViewY)
+
+
+-- Ray functions and coords --
+
+createRay :: (Float, Float) -> Vec3 -> Vec3
+createRay (x, y) o = (imgOriginPixelCenter + (x *^ imgViewX) + (y *^ imgViewY)) - cameraPos -- Replace 'cameraPos' with 'o'
+
+getImgCoords :: Int -> (Int, Int)
+getImgCoords i = (i `mod` imgWidth, i `div` imgWidth)
+
+
+-- Vec3 framebuffer functions -- TODO: Switch out linked lists for Data.Vector
 
 generateZeroedFrameBuffer :: Int -> Int -> [Vec3]
 generateZeroedFrameBuffer w h = [Vec3f 0.0 0.0 0.0 | _ <- [1..(w*h)]]
 
-pixelArr :: [Char]
-pixelArr = generateZeroedPixelArr imgWidth imgHeight
-
 framebuffer :: [Vec3]
 framebuffer = generateZeroedFrameBuffer imgWidth imgHeight
 
+drawBackground :: (Float, Float) -> Vec3
+drawBackground (_, y) = vecLerp (Vec3f 0.5 0.7 1.0) (Vec3f 1.0 1.0 1.0) (y / (fromIntegral imgHeight))
 
--- Throwaway
+samplePixel :: (Int, Int) -> Vec3 -> Int -> Vec3
+samplePixel _ _ 0 = Vec3f 0.0 0.0 0.0
+samplePixel (x, y) o numSamples = let (offsetX, offsetY) = unsafePerformIO $ generatePixelOffset (fromIntegral x, fromIntegral y)
+                                      intersectedRecord = (intersectPixel (offsetX, offsetY) o)
+                                  in if (snd intersectedRecord >= 0.0)
+                                     then let (Vec3f nx ny nz) = (computeNormal intersectedRecord (createRay (offsetX, offsetY) o) o)
+                                          in (0.5 *^ (Vec3f (nx + 1.0) (ny + 1.0) (nz + 1.0))) + (samplePixel (x, y) o (numSamples - 1))
+                                     else drawBackground (offsetX, offsetY) + (samplePixel (x, y) o (numSamples - 1))
+
+drawPixel :: (Int, Int) -> Vec3 -> Vec3
+drawPixel (x, y) o = (1.0 / (fromIntegral spp)) *^ samplePixel(x, y) o spp
+
+
+{-
+drawPixel :: (Int, Int) -> Vec3 -> Vec3
+drawPixel (x, y) o = let intersectedRecord = (intersectPixel (fromIntegral x, fromIntegral y) o)
+                         (Vec3f nx ny nz) = computeNormal intersectedRecord (createRay (fromIntegral x, fromIntegral y) o) o
+                     in if (snd intersectedRecord >= 0.0)
+                        then 0.5 *^ (Vec3f (nx + 1.0) (ny + 1.0) (nz + 1.0))
+                        else drawBackground (fromIntegral x, fromIntegral y)
+-}
+
+mapPixels :: Vec3 -> [Vec3]
+mapPixels o = map (\(i, _) -> (drawPixel (getImgCoords i) o)) (zip [0..] framebuffer)
+
+render :: Vec3 -> IO ()
+render o =  writeVec3Image "output.png" (mapPixels o)
+
+-- String framebuffer functions --
+
+generateZeroedStringFB :: Int -> Int -> [Char]
+generateZeroedStringFB w h = [' ' | _ <- [1..(w*h)]]
+
+stringFB :: [Char]
+stringFB = generateZeroedStringFB imgWidth imgHeight
+
+
 convertRGBtoChar :: Vec3 -> Char
 convertRGBtoChar (Vec3f r g b) | (nearlyEqual r g 0.1) && (nearlyEqual g b 0.1) = 'W'
                                | r > g && r > b   = 'R'
                                | g > r && g > b   = 'G'
                                | otherwise        = 'B'
 
-createRay :: (Int, Int) -> Vec3 -> Vec3
-createRay (x, y) o = (imgOriginPixelCenter + (fromIntegral x *^ imgViewX) + (fromIntegral y *^ imgViewY)) - o
-
-drawBackground :: (Int, Int) -> Char
-drawBackground (_, y) = convertRGBtoChar (vecLerp (Vec3f 0.5 0.7 1.0) (Vec3f 1.0 1.0 1.0) ((fromIntegral y) / (fromIntegral imgHeight)))
+drawBackgroundStringFB :: (Int, Int) -> Char
+drawBackgroundStringFB (_, y) = convertRGBtoChar (vecLerp (Vec3f 0.5 0.7 1.0) (Vec3f 1.0 1.0 1.0) ((fromIntegral y) / (fromIntegral imgHeight)))
 
 
-drawPixel :: (Int, Int) -> Vec3 -> Char
-drawPixel (x, y) v = let intersectedRecord = (intersectPixel (x, y) v) in
+drawPixelStringFB :: (Int, Int) -> Vec3 -> Char
+drawPixelStringFB (x, y) o = let intersectedRecord = (intersectPixel (fromIntegral x, fromIntegral y) o) in
                      if (snd intersectedRecord >= 0.0)
-                     then convertRGBtoChar (computeNormal intersectedRecord (createRay (x,y) cameraPos) cameraPos) --'*'
-                     else drawBackground (x, y)
+                     then convertRGBtoChar (computeNormal intersectedRecord (createRay (fromIntegral x, fromIntegral y) cameraPos) cameraPos) --'*'
+                     else drawBackgroundStringFB (x, y)
 
 
-intersectPixel :: (Int, Int) -> Vec3 -> (SphereRecord, Float)
-intersectPixel (x, y) v = intersectAll ((imgOriginPixelCenter + (fromIntegral x *^ imgViewX) + (fromIntegral y *^ imgViewY)) - v) listOfSpheres v
-      --then '*' --print ("YES " ++ (show (imgOriginPixelCenter + (fromIntegral (i `mod` imgWidth) *^ imgViewX) + (fromIntegral (i `div` imgWidth) *^ imgViewY))) ++ " ") --'*'
-      --else ' ' --print ("NO " ++ (show (imgOriginPixelCenter + (fromIntegral (i `mod` imgWidth) *^ imgViewX) + (fromIntegral (i `div` imgWidth) *^ imgViewY))) ++ " ")
-
-getImgCoords :: Int -> (Int, Int)
-getImgCoords i = (i `mod` imgWidth, i `div` imgWidth)
-
-mapPixels :: Vec3 -> [Char]
-mapPixels v = map (\(i, _) -> (drawPixel (getImgCoords i) v)) (zip [0..] pixelArr)
+mapPixelsStringFB :: Vec3 -> [Char]
+mapPixelsStringFB o = map (\(i, _) -> (drawPixelStringFB (getImgCoords i) o)) (zip [0..] stringFB)
 
 
-insertNewLines :: Int -> [Char] -> [Char]
-insertNewLines _ [] = []
-insertNewLines i (pixel:pixels) = if ((i `mod` imgWidth) == 0) -- (i /= 0)
-                                then '\n':pixel:(insertNewLines (i+1) pixels)
-                                else pixel:(insertNewLines (i+1) pixels)
+insertNewLinesStringFB :: Int -> [Char] -> [Char]
+insertNewLinesStringFB _ [] = []
+insertNewLinesStringFB i (pixel:pixels) = if ((i `mod` imgWidth) == 0) -- (i /= 0)
+                                then '\n':pixel:(insertNewLinesStringFB (i+1) pixels)
+                                else pixel:(insertNewLinesStringFB (i+1) pixels)
 
-render :: Vec3 -> IO ()
-render v = putStrLn (insertNewLines 0 (mapPixels v))
+renderStringFB :: Vec3 -> IO ()
+renderStringFB o = putStrLn (insertNewLinesStringFB 0 (mapPixelsStringFB o))
 
--- Use Record syntax
+-- Intersect functions --
+
+closestOrInvalid :: [(SphereRecord, Float)] -> (SphereRecord, Float)
+closestOrInvalid [] = (nullSphere, -1.0)
+closestOrInvalid (x:xs) = foldr minT x xs
+                          where minT tuple1 tuple2 = if snd tuple1 < snd tuple2
+                                                     then tuple1
+                                                     else tuple2
+
+intersectPixel :: (Float, Float) -> Vec3 -> (SphereRecord, Float)
+intersectPixel (x, y) o = intersectAll (createRay (x,y) o) listOfSpheres o
+
+intersectAll :: Vec3 -> [SphereRecord] -> Vec3 -> (SphereRecord, Float)
+intersectAll rayDir spheres camPos = closestOrInvalid (filter (\(_, t) -> t >= 0.0) (map (\(sphere) -> (sphere, intersect rayDir sphere camPos)) spheres))
+
+intersect :: Vec3 -> SphereRecord -> Vec3 -> Float
+intersect rayDir sphere camPos = if d >= 0
+                                 then ((-b) - (sqrt d)) / (2*vdotv)
+                                 else -1.0
+                                 where oc = (camPos - (position sphere))
+                                       v = rayDir
+                                       vdotv = v `dot` v
+                                       r = (radius sphere)
+                                       b = 2 * (v `dot` oc)
+                                       d = b^2 - 4*vdotv*((oc `dot` oc) - r*r)
+
+-- Compute normalized normal from sphere intersection point to sphere center
+computeNormal :: (SphereRecord, Float) -> Vec3 -> Vec3 -> Vec3
+computeNormal (sphere, t) ray camPos = if t >= 0.0
+                                       then vecNormalize (((t *^ ray) + camPos) - (position sphere)) -- (1.0 / (radius sphere)) *^ (((t *^ ray) + camPos) - (position sphere)) -- NOTE: cameraPos is (0,0,0) not updated camPos after controls movement
+                                       else (Vec3f 0.0 0.0 0.0)
+
+-- Credit to chatGPT for this unpure RNG function
+generatePixelOffset :: (Float, Float) -> IO (Float, Float)
+generatePixelOffset (x, y) = do
+    gen <- getStdGen
+    let (randomX, gen1) = randomR (-0.5, 0.5) gen
+    let (randomY, _) = randomR (-0.5, 0.5) gen1
+    setStdGen gen1  -- Update the global generator
+    return (x + randomX, y + randomY)
+
+{-
+generatePixelOffset :: (Float, Float) -> (Float, Float)
+generatePixelOffset (x, y) = let (randomX, gen1) = randomR (-0.5, 0.5) globalGen
+                                 (randomY, gen2) = randomR (-0.5, 0.5) gen1
+                             in (x + randomX, y + randomY)
+-}
+
+-- Sphere data and functions --
 data SphereRecord = Sphere { position :: Vec3, radius :: Float }
   deriving (Show, Eq)
 
 listOfSpheres :: [SphereRecord]
-listOfSpheres = [Sphere { position = Vec3f 0.0 0.0 (-focalLen - 2), radius = 0.5}, Sphere { position = Vec3f 2.0 0.0 (-focalLen - 2), radius = 0.25}]
+listOfSpheres = [Sphere { position = Vec3f 0.0 0.0 (-focalLen), radius = 0.5}, Sphere { position = Vec3f 2.0 0.0 (-focalLen - 2), radius = 0.25}]
 
 nullSphere :: SphereRecord
 nullSphere = Sphere { position = Vec3f 0xDEADBEEF 0xDEADBEEF 0xDEADBEEF , radius = 0xDEADBEEF} -- Debug values
@@ -152,30 +249,10 @@ nullSphere = Sphere { position = Vec3f 0xDEADBEEF 0xDEADBEEF 0xDEADBEEF , radius
 testSphere :: SphereRecord
 testSphere = Sphere { position = Vec3f 0.0 0.0 (-focalLen - 2), radius = 0.5}
 
-closestOrInvalid :: [(SphereRecord, Float)] -> (SphereRecord, Float)
-closestOrInvalid [] = (nullSphere, -1.0)
-closestOrInvalid (x:xs) = foldr minT x xs
-                        where minT tuple1 tuple2 = if snd tuple1 < snd tuple2
-                                                   then tuple1
-                                                   else tuple2
 
-intersectAll :: Vec3 -> [SphereRecord] -> Vec3 -> (SphereRecord, Float)
-intersectAll rayDir spheres camPos = closestOrInvalid (filter (\(_, t) -> t >= 0.0) (map (\(sphere) -> (sphere, intersect rayDir sphere camPos)) spheres))
 
-intersect :: Vec3 -> SphereRecord -> Vec3 -> Float
-intersect rayDir sphere camPos = if d >= 0
-                            then ((-b) - (sqrt d)) / (2*vdotv)
-                            else -1.0
-                            where oc = (camPos - (position sphere))
-                                  v = rayDir
-                                  vdotv = v `dot` v
-                                  r = (radius sphere)
-                                  b = 2 * (v `dot` oc)
-                                  d = b^2 - 4*vdotv*((oc `dot` oc) - r*r)
+-- Vec3 functions --
 
--- Compute normalized normal from sphere intersection point to sphere center
-computeNormal :: (SphereRecord, Float) -> Vec3 -> Vec3 -> Vec3
-computeNormal (sphere, t) ray camPos = vecNormalize (((t *^ ray) + camPos) - (position sphere)) -- (1.0 / (radius sphere)) *^ (((t *^ ray) + camPos) - (position sphere)) -- NOTE: cameraPos is (0,0,0) not updated camPos after controls movement
 
 -- Vec3 ADT; could use type punning but not a fan so I didn't
 data Vec3 = Vec3f Float Float Float
@@ -229,6 +306,9 @@ vecDistance v1 v2 = sqrt (diff `dot` diff)
 
 vecLength :: Vec3 -> Float
 vecLength v = sqrt (v `dot` v)
+
+vecLength2 :: Vec3 -> Float
+vecLength2 v = v `dot` v
 
 vecNormalize :: Vec3 -> Vec3
 vecNormalize (Vec3f x y z) = if norm /= 0.0

@@ -6,6 +6,8 @@ dependencies:
 - base
 - ansi-terminal
 - JuicyPixels >= 3.3.9
+- vector
+- random
 
 library:
   source-dirs: src

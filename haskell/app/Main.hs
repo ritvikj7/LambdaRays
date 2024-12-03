@@ -21,7 +21,8 @@ doAnimation v = do
 
 main :: IO ()
 main = do
-  hSetBuffering stdin NoBuffering                     -- immediately read char
-  hSetBuffering stdout (BlockBuffering (Just 40000))  -- stop flicker
-  hSetEcho stdout False                               -- don't print out input char to stdout
-  doAnimation (Vec3f 0.0 0.0 0.0)
+  someFunc2 (Vec3f 0.0 0.0 0.0)
+  --hSetBuffering stdin NoBuffering                     -- immediately read char
+  --hSetBuffering stdout (BlockBuffering (Just 40000))  -- stop flicker
+  --hSetEcho stdout False                               -- don't print out input char to stdout
+  --doAnimation (Vec3f 0.0 0.0 0.0)
