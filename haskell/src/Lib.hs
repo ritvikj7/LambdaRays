@@ -3,7 +3,7 @@
 {-# HLINT ignore "Redundant bracket" #-}
 
 module Lib
-    ( someFunc,
+    ( --someFunc,
       someFunc2,
       Vec3(..),
       (*^),
@@ -23,10 +23,10 @@ import qualified Data.Vector as V
 import System.Random
 import System.IO.Unsafe (unsafePerformIO)
 
-someFunc :: Vec3 -> IO () --Vec3 -> IO ()
-someFunc = renderStringFB --putStrLn "someFunc" --v3 = putStrLn (show v3 ++ " " ++ "someFunc")
+--someFunc :: Vec3 -> IO () --Vec3 -> IO ()
+--someFunc = renderStringFB --putStrLn "someFunc" --v3 = putStrLn (show v3 ++ " " ++ "someFunc")
 
-someFunc2 :: Vec3 -> IO ()
+someFunc2 :: IO ()
 someFunc2 = render
 
 -- Sampling information --
@@ -80,7 +80,7 @@ imgViewY :: Vec3
 imgViewY = (1.0 / (fromIntegral imgHeight)) *^ imgViewH
 
 near :: Float
-near = 1.0 -- Distance to near plane
+near = 1.0 -- TODO: Using focalLen instead; get rid of this
 
 focalLen :: Float
 focalLen = 1.0 --(sqrt ((fromIntegral imgWidth)^2 + (fromIntegral imgHeight)^2)) / ( 2*(tan (pi / 8)  ) )
@@ -103,8 +103,12 @@ computeImgOriginPixelCenter newCamPos = (newCamPos + cameraNormal + ((-0.5) *^ i
 
 -- Ray functions and coords --
 
-createRay :: (Float, Float) -> Vec3 -> Vec3
-createRay (x, y) o = (imgOriginPixelCenter + (x *^ imgViewX) + (y *^ imgViewY)) - cameraPos -- Replace 'cameraPos' with 'o'
+getRayAtT :: Vec3 -> Float -> Vec3 -> Vec3
+getRayAtT o t v = o + (t *^ v)
+
+-- TODO: Fix this name, should be createViewportRay ?
+createRay :: (Float, Float) -> Vec3
+createRay (x, y) = (imgOriginPixelCenter + (x *^ imgViewX) + (y *^ imgViewY)) - cameraPos -- Replace 'cameraPos' with 'o'
 
 getImgCoords :: Int -> (Int, Int)
 getImgCoords i = (i `mod` imgWidth, i `div` imgWidth)
@@ -119,38 +123,98 @@ framebuffer :: [Vec3]
 framebuffer = generateZeroedFrameBuffer imgWidth imgHeight
 
 drawBackground :: (Float, Float) -> Vec3
-drawBackground (_, y) = vecLerp (Vec3f 0.5 0.7 1.0) (Vec3f 1.0 1.0 1.0) (y / (fromIntegral imgHeight))
+drawBackground (_, y) = vecLerp (Vec3f 0.5 0.7 1.0) (Vec3f 1.0 1.0 1.0) (y / (fromIntegral imgHeight)) -- (Vec3f 0.005 0.005 0.02) (Vec3f 0.0 0.0 0.0)
 
-samplePixel :: (Int, Int) -> Vec3 -> Int -> Vec3
-samplePixel _ _ 0 = Vec3f 0.0 0.0 0.0
-samplePixel (x, y) o numSamples = let (offsetX, offsetY) = unsafePerformIO $ generatePixelOffset (fromIntegral x, fromIntegral y)
-                                      intersectedRecord = (intersectPixel (offsetX, offsetY) o)
-                                  in if (snd intersectedRecord >= 0.0)
-                                     then let (Vec3f nx ny nz) = (computeNormal intersectedRecord (createRay (offsetX, offsetY) o) o)
-                                          in (0.5 *^ (Vec3f (nx + 1.0) (ny + 1.0) (nz + 1.0))) + (samplePixel (x, y) o (numSamples - 1))
-                                     else drawBackground (offsetX, offsetY) + (samplePixel (x, y) o (numSamples - 1))
+data LightRecord = Light { posLight :: Vec3, normalLight :: Vec3, colorLight :: Vec3 }
+  deriving (Show, Eq)
 
-drawPixel :: (Int, Int) -> Vec3 -> Vec3
-drawPixel (x, y) o = (1.0 / (fromIntegral spp)) *^ samplePixel(x, y) o spp
+light1 :: LightRecord
+light1 = Light { posLight = Vec3f (-1.0) 1.5 (0.25) , normalLight = Vec3f (-1.0) 0.0 0.0, colorLight = Vec3f 0.3 0.3 0.3}
+
+kA :: Float
+kA = 0.005
+
+kD :: Float
+kD = 0.8
+
+-- Swapped out for per-sphere albedo
+--diffuseColor :: Vec3
+--diffuseColor = Vec3f 0.5 0.0 0.0
+
+kS :: Float
+kS = 0.5
+
+-- Swapped out for per-sphere albedo
+--ambientColor :: Vec3
+--ambientColor = Vec3f 0.025 0.0 0.15
 
 
-{-
-drawPixel :: (Int, Int) -> Vec3 -> Vec3
-drawPixel (x, y) o = let intersectedRecord = (intersectPixel (fromIntegral x, fromIntegral y) o)
-                         (Vec3f nx ny nz) = computeNormal intersectedRecord (createRay (fromIntegral x, fromIntegral y) o) o
-                     in if (snd intersectedRecord >= 0.0)
-                        then 0.5 *^ (Vec3f (nx + 1.0) (ny + 1.0) (nz + 1.0))
-                        else drawBackground (fromIntegral x, fromIntegral y)
--}
+shadeSphere :: (Float, Float) -> Vec3 -> (Vec3, SphereRecord, Vec3) -> Int -> Vec3
+shadeSphere (x,y) incidentRay (normal, sphere, hitPoint) depth = let shadowRay = vecNormalize ((posLight light1) - hitPoint)
+                                                                     intersectRecord = (intersectAll shadowRay hitPoint (filter (/= sphere) listOfSpheres)) -- Got rid of shadow acne with this, let's goooo!
+                                                                     sphereMaterial = (material sphere)
+                                                                     sphereAlbedo = (albedo sphere)
+                                                                     tShadow = (snd intersectRecord)
+                                                                  in if (nearlyEqual tShadow (-1.0) 0.001) -- Self intersections will cause to set off sometimes (shadow acne)
+                                                                     then if (sphereMaterial == NonMetal)
+                                                                     then shadeNonMetalSphere (normal, sphere, hitPoint)
+                                                                     else shadeReflectiveSphere (x,y) incidentRay (normal, sphere, hitPoint) depth
+                                                                     else kA *^ sphereAlbedo
 
-mapPixels :: Vec3 -> [Vec3]
-mapPixels o = map (\(i, _) -> (drawPixel (getImgCoords i) o)) (zip [0..] framebuffer)
+shadeReflectiveSphere :: (Float, Float) -> Vec3 -> (Vec3, SphereRecord, Vec3) -> Int -> Vec3
+shadeReflectiveSphere (x,y) incidentRay (normal, sphere, hitPoint) 0 = (albedo sphere)
+shadeReflectiveSphere (x,y) incidentRay (normal, sphere, hitPoint) depth = let reflectRay = vecNormalize (vecReflect (vecNormalize incidentRay) normal) -- TODO: Gotta clean up these normalizations. I'm throwing them out like free candy lol
+                                                                               (Vec3f albedoR albedoG albedoB) = (albedo sphere)
+                                                                               intersectRecord = (intersectAll reflectRay hitPoint (filter (/= sphere) listOfSpheres)) -- Need to be aware of shadow acne issue here with bounce ray
+                                                                               newSphere = (fst intersectRecord)
+                                                                               tReflect = (snd intersectRecord)
+                                                                            in if tReflect >= 0.0
+                                                                               then let newNormal = computeNormal intersectRecord reflectRay hitPoint
+                                                                                        newHitPoint = getRayAtT hitPoint tReflect reflectRay
+                                                                                        (Vec3f cx cy cz) = shadeSphere (x, y) incidentRay (newNormal, newSphere, newHitPoint) (depth - 1)
+                                                                                    in (Vec3f (albedoR * cx) (albedoG * cy) (albedoB * cz))
+                                                                               else let (Vec3f bx by bz) = drawBackground (x,y)
+                                                                                    in (Vec3f (albedoR * bx) (albedoG * by) (albedoB * bz))
 
-render :: Vec3 -> IO ()
-render o =  writeVec3Image "output.png" (mapPixels o)
+shadeNonMetalSphere :: (Vec3, SphereRecord, Vec3) -> Vec3
+shadeNonMetalSphere (normal, sphere, hitPoint) = let shadowRay = vecNormalize ((posLight light1) - hitPoint)
+                                                     view = vecNormalize (cameraPos - hitPoint)
+                                                     half = vecNormalize (shadowRay + view)
+                                                     lightColor = (colorLight light1)
+                                                     sphereAlbedo = (albedo sphere)
+
+                                                     ambient = kA *^ sphereAlbedo
+                                                     diffuse = (kD * (max (dot normal shadowRay) 0.0)) *^ sphereAlbedo
+                                                     specular = (kS * ((max (dot normal half) 0.0) ** 32.0  )) *^ lightColor -- Turned off specular because I have some bug? Maybe I'm computing the half vector wrong for Blinn-Phong
+
+                                                     (Vec3f cx cy cz) = ambient + diffuse + specular
+                                                 in (Vec3f (min cx 1.0) (min cy 1.0) (min cz 1.0))
+
+samplePixel :: (Int, Int) -> Int -> Vec3
+samplePixel _ 0 = Vec3f 0.0 0.0 0.0
+samplePixel (x, y) numSamples = let (offsetX, offsetY) = generatePixelOffset (fromIntegral x, fromIntegral y)
+                                    intersectedSphereRecord = (intersectPixel (offsetX, offsetY) listOfSpheres)
+                                    sphere = (fst intersectedSphereRecord)
+                                    tSphere = (snd intersectedSphereRecord)
+                                    ray = createRay (offsetX, offsetY)
+                                  in if (tSphere >= 0.0)
+                                     then let (Vec3f nx ny nz) = (computeNormal intersectedSphereRecord ray cameraPos)
+                                              hitPoint = getRayAtT cameraPos tSphere ray
+                                              rayDepth = 5
+                                          in shadeSphere (offsetX, offsetY) ray ((Vec3f nx ny nz), sphere, hitPoint) rayDepth + (samplePixel (x, y) (numSamples - 1)) --(0.5 *^ (Vec3f (nx + 1.0) (ny + 1.0) (nz + 1.0))) to visualize normals
+                                     else drawBackground (offsetX, offsetY) + (samplePixel (x, y) (numSamples - 1))
+
+drawPixel :: (Int, Int) -> Vec3
+drawPixel (x, y) = gammaCorrect ((1.0 / (fromIntegral spp)) *^ samplePixel(x, y) spp)
+
+mapPixels :: [Vec3]
+mapPixels = map (\(i, _) -> (drawPixel (getImgCoords i))) (zip [0..] framebuffer)
+
+render :: IO ()
+render =  writeVec3Image "output.png" (mapPixels)
 
 -- String framebuffer functions --
-
+{--
 generateZeroedStringFB :: Int -> Int -> [Char]
 generateZeroedStringFB w h = [' ' | _ <- [1..(w*h)]]
 
@@ -169,9 +233,9 @@ drawBackgroundStringFB (_, y) = convertRGBtoChar (vecLerp (Vec3f 0.5 0.7 1.0) (V
 
 
 drawPixelStringFB :: (Int, Int) -> Vec3 -> Char
-drawPixelStringFB (x, y) o = let intersectedRecord = (intersectPixel (fromIntegral x, fromIntegral y) o) in
+drawPixelStringFB (x, y) o = let intersectedRecord = (intersectPixel (fromIntegral x, fromIntegral y)) in
                      if (snd intersectedRecord >= 0.0)
-                     then convertRGBtoChar (computeNormal intersectedRecord (createRay (fromIntegral x, fromIntegral y) cameraPos) cameraPos) --'*'
+                     then convertRGBtoChar (computeNormal intersectedRecord (createRay (fromIntegral x, fromIntegral y))) --'*'
                      else drawBackgroundStringFB (x, y)
 
 
@@ -187,67 +251,97 @@ insertNewLinesStringFB i (pixel:pixels) = if ((i `mod` imgWidth) == 0) -- (i /= 
 
 renderStringFB :: Vec3 -> IO ()
 renderStringFB o = putStrLn (insertNewLinesStringFB 0 (mapPixelsStringFB o))
+--}
 
 -- Intersect functions --
 
-closestOrInvalid :: [(SphereRecord, Float)] -> (SphereRecord, Float)
-closestOrInvalid [] = (nullSphere, -1.0)
+closestOrInvalid :: (SceneObject a) => [(a, Float)] -> (a, Float)
+closestOrInvalid [] = (nullObject, -1.0)
 closestOrInvalid (x:xs) = foldr minT x xs
                           where minT tuple1 tuple2 = if snd tuple1 < snd tuple2
                                                      then tuple1
                                                      else tuple2
 
-intersectPixel :: (Float, Float) -> Vec3 -> (SphereRecord, Float)
-intersectPixel (x, y) o = intersectAll (createRay (x,y) o) listOfSpheres o
+intersectPixel :: (SceneObject a) => (Float, Float) -> [a] -> (a, Float)
+intersectPixel (x, y) = intersectAll (createRay (x,y)) cameraPos
 
-intersectAll :: Vec3 -> [SphereRecord] -> Vec3 -> (SphereRecord, Float)
-intersectAll rayDir spheres camPos = closestOrInvalid (filter (\(_, t) -> t >= 0.0) (map (\(sphere) -> (sphere, intersect rayDir sphere camPos)) spheres))
+intersectAll :: (SceneObject a) => Vec3 -> Vec3 -> [a] -> (a, Float)
+intersectAll rayDir rayOrigin sceneObjs = closestOrInvalid (filter (\(_, t) -> t >= 0.0) (map (\(sceneObj) -> (sceneObj, intersect rayDir rayOrigin sceneObj)) sceneObjs))
 
-intersect :: Vec3 -> SphereRecord -> Vec3 -> Float
-intersect rayDir sphere camPos = if d >= 0
-                                 then ((-b) - (sqrt d)) / (2*vdotv)
-                                 else -1.0
-                                 where oc = (camPos - (position sphere))
-                                       v = rayDir
-                                       vdotv = v `dot` v
-                                       r = (radius sphere)
-                                       b = 2 * (v `dot` oc)
-                                       d = b^2 - 4*vdotv*((oc `dot` oc) - r*r)
+instance SceneObject SphereRecord where
+  intersect :: Vec3 -> Vec3 -> SphereRecord -> Float
+  intersect rayDir rayOrigin sphere = if d >= 0
+                            then ((-b) - (sqrt d)) / (2*vdotv)
+                            else -1.0
+                            where oc = (rayOrigin - (position sphere))
+                                  v = rayDir
+                                  vdotv = v `dot` v
+                                  r = (radius sphere)
+                                  b = 2 * (v `dot` oc)
+                                  d = b^2 - 4*vdotv*((oc `dot` oc) - r*r)
+  nullObject :: SphereRecord
+  nullObject = nullSphere
+
+instance SceneObject PlaneRecord where
+  intersect :: Vec3 -> Vec3 -> PlaneRecord -> Float
+  intersect rayDir rayOrigin plane = error "TODO: Finish this"
+
+  nullObject :: PlaneRecord
+  nullObject = nullPlane
 
 -- Compute normalized normal from sphere intersection point to sphere center
 computeNormal :: (SphereRecord, Float) -> Vec3 -> Vec3 -> Vec3
-computeNormal (sphere, t) ray camPos = if t >= 0.0
-                                       then vecNormalize (((t *^ ray) + camPos) - (position sphere)) -- (1.0 / (radius sphere)) *^ (((t *^ ray) + camPos) - (position sphere)) -- NOTE: cameraPos is (0,0,0) not updated camPos after controls movement
-                                       else (Vec3f 0.0 0.0 0.0)
+computeNormal (sphere, t) ray o = if t >= 0.0
+                                  then  (1.0 / (radius sphere)) *^ (((t *^ ray) + o) - (position sphere))
+                                  else (Vec3f 0.0 0.0 0.0)
 
 -- Credit to chatGPT for this unpure RNG function
-generatePixelOffset :: (Float, Float) -> IO (Float, Float)
-generatePixelOffset (x, y) = do
+generateRandomNum :: Float -> Float -> IO Float
+generateRandomNum min max = do
     gen <- getStdGen
-    let (randomX, gen1) = randomR (-0.5, 0.5) gen
-    let (randomY, _) = randomR (-0.5, 0.5) gen1
-    setStdGen gen1  -- Update the global generator
-    return (x + randomX, y + randomY)
+    let (randomNum, gen1) = randomR (min, max) gen
+    setStdGen gen1 -- Update the global generator
+    return randomNum
 
-{-
+
 generatePixelOffset :: (Float, Float) -> (Float, Float)
-generatePixelOffset (x, y) = let (randomX, gen1) = randomR (-0.5, 0.5) globalGen
-                                 (randomY, gen2) = randomR (-0.5, 0.5) gen1
-                             in (x + randomX, y + randomY)
--}
+generatePixelOffset (x, y) = let offsetX = unsafePerformIO $ generateRandomNum (-0.5) 0.5
+                                 offsetY = unsafePerformIO $ generateRandomNum (-0.5) 0.5
+                             in (x + offsetX, y + offsetY)
+
+-- Scene Object ---
+class SceneObject a where
+  intersect :: Vec3 -> Vec3 -> a -> Float
+  nullObject :: a
+
+-- Plane object ---
+data PlaneRecord = Plane { pointPlane :: Vec3, normalPlane :: Vec3 }
+  deriving (Show, Eq)
+
+listOfPlanes :: [PlaneRecord]
+listOfPlanes = [Plane { pointPlane = Vec3f (-2.5) 0.0 (-focalLen - 5), normalPlane = (vecNormalize (Vec3f (1.0) 0.0 0.0))}]
+
+nullPlane :: PlaneRecord
+nullPlane = Plane { pointPlane = Vec3f 0xDEADBEEF 0xDEADBEEF 0xDEADBEEF, normalPlane = Vec3f 0xDEADBEEF 0xDEADBEEF 0xDEADBEEF }
+
+-- Material ADT --
+data Material = Metal | NonMetal
+  deriving (Show, Eq)
 
 -- Sphere data and functions --
-data SphereRecord = Sphere { position :: Vec3, radius :: Float }
+data SphereRecord = Sphere { position :: Vec3, radius :: Float, material :: Material, albedo :: Vec3}
   deriving (Show, Eq)
 
 listOfSpheres :: [SphereRecord]
-listOfSpheres = [Sphere { position = Vec3f 0.0 0.0 (-focalLen), radius = 0.5}, Sphere { position = Vec3f 2.0 0.0 (-focalLen - 2), radius = 0.25}]
+listOfSpheres = [Sphere { position = Vec3f 0.0 0.0 (-focalLen - 1), radius = 0.5, material = NonMetal, albedo = Vec3f 1.0 0.0 0.05}, Sphere { position = Vec3f 1.25 0.1 (-focalLen - 1), radius = 0.35, material = NonMetal, albedo = (Vec3f 0.2 0.8 0.2)},
+                 Sphere { position = Vec3f (-1.5) 0.0 (-focalLen - 1), radius = 0.6, material = Metal, albedo = (Vec3f 0.8 0.8 0.8)}, Sphere { position = Vec3f 0.0 (-100.5) (-focalLen), radius = 100, material = NonMetal, albedo = Vec3f 0.8 0.8 0.0 },
+                 Sphere { position = Vec3f 1.0 0.5 0.4, radius = 0.8, material = NonMetal, albedo = (Vec3f 0.0 0.1 0.9)}, Sphere {position = Vec3f (0.0) 1.25 (-focalLen - 1.075), radius = 0.5, material = Metal, albedo = (Vec3f 0.8 0.8 0.8)}]
 
 nullSphere :: SphereRecord
-nullSphere = Sphere { position = Vec3f 0xDEADBEEF 0xDEADBEEF 0xDEADBEEF , radius = 0xDEADBEEF} -- Debug values
+nullSphere = Sphere { position = Vec3f 0xDEADBEEF 0xDEADBEEF 0xDEADBEEF , radius = 0xDEADBEEF, material = NonMetal, albedo = Vec3f 0xDEADBEEF 0xDEADBEEF 0xDEADBEEF} -- Debug values
 
 testSphere :: SphereRecord
-testSphere = Sphere { position = Vec3f 0.0 0.0 (-focalLen - 2), radius = 0.5}
+testSphere = Sphere { position = Vec3f 0.0 0.0 (-focalLen - 2), radius = 0.5, material = NonMetal, albedo = Vec3f 1.0 0.0 0.0}
 
 
 
@@ -317,6 +411,12 @@ vecNormalize (Vec3f x y z) = if norm /= 0.0
                           where v = Vec3f x y z
                                 norm = vecLength v
 
+vecReflect :: Vec3 -> Vec3 -> Vec3
+vecReflect v n = v - ((2.0 * dot v n) *^ n)
+
+-- Camera and ray data and functions --
+
+-- Utils --
 floatLerp :: Float -> Float -> Float -> Float
 floatLerp a b t = (1.0 - t) * a + t * b
 
@@ -327,8 +427,13 @@ vecLerp a b t = (1.0 - t) *^ a + t *^ b
 nearlyEqual :: Float -> Float -> Float -> Bool
 nearlyEqual a b epsilon = abs (a - b) < epsilon
 
+-- Image processing --
+
+gammaCorrect :: Vec3 -> Vec3
+gammaCorrect (Vec3f r g b) = Vec3f (r ** (1.0 / 2.0)) (g ** (1.0 / 2.0))  (b ** (1.0 / 2.0)) -- Use gamma exponent 2.2
+
 vec3ToPixel :: Vec3 -> PixelRGB8
-vec3ToPixel (Vec3f r g b) = PixelRGB8 (floor (r * 255)) (floor (g * 255)) (floor (b * 255))
+vec3ToPixel (Vec3f r g b) = PixelRGB8 (floor (r * 255.9)) (floor (g * 255.9)) (floor (b * 255.9))
 
 writeVec3Image :: FilePath -> [Vec3] -> IO ()
 writeVec3Image filePath frameBuffer = writePng filePath (generateImage pixelRenderer imgWidth imgHeight)
