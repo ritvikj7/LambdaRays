@@ -43,6 +43,38 @@ To adjust these parameters, you can go into [src/Camera.hs](https://github.stude
 
 Note: I would not go beyond the parameters I specified given it will even take a long time at `720p` at `spp = 5` so be prepared to wait a long time if you choose to do this.
 
+## A Guide to complete MVP implementation in detail
+
+
+Let us go through each file and explain what each chunk of code is doing:
+
+First of all, let us talk about the [Vec3.hs](https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/main/haskell/src/Vec3.hs) file:
+This module is implementing to initialize the vector in 3 dimensions that can be used to present the point on the image, point the direction of another vector, also can be used to store the value of the color in form of RGB to print the corresponding color of each pixels which is used extensively to produce the desired image after interacting with the objects, light source and camera lens.
+Following is the smaller chunk of code and a little explanation on what it is doing:
+1.	https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/dbe3946e72d6ba6edada83e0806f6ceb2e867e4d/haskell/src/Vec3.hs#L12-L32
+    This chunk of code is implementing the instance of the Vec3 in Num and supports the basic arithmetic operations such as addition, subtractions, negation, absolute and normalization of the vectors in 3 dimensions.
+2.	https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/dbe3946e72d6ba6edada83e0806f6ceb2e867e4d/haskell/src/Vec3.hs#L35-L72
+    This chunk of code is implementing few additional operations that can be used to operate on vectors that are extensively used later on during calculation of the ray determinant to check if the ray is interacting with the object or not. By implementing operations such as dot and cross product along with few additional implementations such as calculation of the vector length and few others.
+
+Thus, this is the guide on Vec3.hs file and what it is implementing.
+
+Let’s move on and talk about the [Camera.hs](https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/main/haskell/src/Camera.hs) file:
+This module is implementing to initialize the camera position along with setting the size of the width and height of the image that will be generated. Moreover, this module also sets few other constraints that are extremely important to generate the image such as setting the spp also known as samples per pixels, which states that how many samples we need to have per pixel to generate the RGB component for that particular pixel. In our implementation we are assigning samples as the number of rays to be inserted/emitted per pixels to generate the corresponding correct RGB values for a pixel. In addition, this file also works on creating rays from the camera lens to the co-ordinates passed.
+Following is the smaller chunk of code and a little explanation on what it is doing:
+1.	https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/c7e68e37286e71f3287a0a4a6ffa7c4bad6d6970/haskell/src/Camera.hs#L5-L21
+    This chunk of code is setting the aspect ratio of the image and setting the data of the width and height accordingly to the width passed and aspect ratio mentioned.
+2.	https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/c7e68e37286e71f3287a0a4a6ffa7c4bad6d6970/haskell/src/Camera.hs#L24-L34
+    This chunk of code is Defining the width and height of the image in world coordinates as vectors and normalized versions (imgVecX and imgVecY) represent unit vectors in the x and y directions.
+3.	https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/c7e68e37286e71f3287a0a4a6ffa7c4bad6d6970/haskell/src/Camera.hs#L36-L52
+    This chunk of code setting the viewport for the camera along with coverting it into the vectors and also calculating its size in one pixel in x (width) and y (height).
+4.	https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/c7e68e37286e71f3287a0a4a6ffa7c4bad6d6970/haskell/src/Camera.hs#L54-L73
+    This is actually placing the virtual camera in the setting alongside setting its focal length and the plane near the camera. Moreover, this chunk of code also defines the co-ordinates that are going to be used by other part of the code extensively to calculate the vector direction from the camera to the co-ordinates the program is working on that a particular point in time.
+5.	https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/c7e68e37286e71f3287a0a4a6ffa7c4bad6d6970/haskell/src/Camera.hs#L78-L86
+    This part of the code works on generating the rays and also calculating the point in the setting that the ray can reach given its point and direction.
+
+Thus, this is the guide on Camera.hs file and what it is implementing.
+
+
 ## A guide to our new learning
 - Highlighting how the new learning is essential for your project/MVP
 - Direct links into parts of the code where the new learning was employed
