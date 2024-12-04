@@ -16,8 +16,9 @@ Our team is:
 
 We call ourselves: **The Good, The Bad, The Ugly**.
 
+## Demo Video
+- Here is the link to the demo video: https://youtu.be/Yvb3GtVKB5Y?si=NFWiHo3Mr2g9wP0j
 
----
 ## Acknowledgments
 
 - CPSC 314 Notes
