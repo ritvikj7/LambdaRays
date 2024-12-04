@@ -10,9 +10,11 @@ import System.IO.Unsafe (unsafePerformIO)
 
 -- Just a CPU pixel shader --
 
+-- Ambient light coefficient (controls the intensity of ambient light in the scene)
 kA :: Float
 kA = 0.005
 
+-- Diffuse light coefficient (controls the intensity of diffuse reflection)
 kD :: Float
 kD = 0.8
 
@@ -20,6 +22,7 @@ kD = 0.8
 -- diffuseColor :: Vec3
 -- diffuseColor = Vec3f 0.5 0.0 0.0
 
+-- Specular light coefficient (controls the intensity of specular highlights)
 kS :: Float
 kS = 0.5
 
@@ -27,9 +30,14 @@ kS = 0.5
 -- ambientColor :: Vec3
 -- ambientColor = Vec3f 0.025 0.0 0.15
 
+{- Draw the background gradient for areas not intersected by objects. 
+This creates a gradient from blue (sky) to white based on the y-coordinate of the ray -}
 drawBackground :: (Float, Float) -> Vec3
 drawBackground (_, y) = vecLerp (Vec3f 0.5 0.7 1.0) (Vec3f 1.0 1.0 1.0) (y / (fromIntegral imgHeight))
 
+
+{- Shade a sphere by determining its material type and calculating the color contribution
+Includes checks for shadows and recursive reflection for reflective materials -}
 shadeSphere :: (Float, Float) -> Vec3 -> (Vec3, SphereRecord, Vec3) -> Int -> Vec3
 shadeSphere (x,y) incidentRay (normal, sphere, hitPoint) depth = let shadowRay = vecNormalize ((posLight light1) - hitPoint)
                                                                      intersectRecord = (intersectAll shadowRay hitPoint (filter (/= sphere) listOfSpheres)) -- Got rid of shadow acne with this, let's goooo!
@@ -44,6 +52,7 @@ shadeSphere (x,y) incidentRay (normal, sphere, hitPoint) depth = let shadowRay =
                                                                           else error "Invalid material specified"
                                                                      else kA *^ sphereAlbedo
 
+ -- Shade a reflective sphere by tracing the reflected ray --
 shadeReflectiveSphere :: (Float, Float) -> Vec3 -> (Vec3, SphereRecord, Vec3) -> Int -> Vec3
 shadeReflectiveSphere (x,y) incidentRay (normal, sphere, hitPoint) 0 = (albedo sphere)
 shadeReflectiveSphere (x,y) incidentRay (normal, sphere, hitPoint) depth = let reflectRay = vecNormalize (vecReflect (vecNormalize incidentRay) normal) -- TODO: Gotta clean up these normalizations. I'm throwing them out like free candy lol

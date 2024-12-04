@@ -1,7 +1,10 @@
 module Camera where
 import Vec3
 
--- Sampling information --
+-- Sampling information: --
+{- 'spp' (samples per pixel) determines the number of light rays cast per pixel. 
+Each ray is slightly offset from the pixel's center, with the offsets controlled 
+by a random number generator (implemented in 'generateRandomNum').-}
 spp :: Int
 spp = 8
 
