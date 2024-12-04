@@ -20,7 +20,7 @@ We call ourselves: **The Good, The Bad, The Ugly**.
 
 - [Link to new README.md](haskell/README.md)
   - Takes you to the new README.md file that walksthrough the MVP in-detail
-- [Link to the demo (PLACEHOLDER switch this out)](https://www.youtube.com/)
+- [Link to the demo](https://youtu.be/Yvb3GtVKB5Y?si=NFWiHo3Mr2g9wP0j)
   - Takes you to the demo video illustrating the functionality of the MVP.
 
 
