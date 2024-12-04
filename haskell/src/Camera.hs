@@ -3,7 +3,7 @@ import Vec3
 
 -- Sampling information --
 spp :: Int
-spp = 7
+spp = 8
 
 -- Camera data --
 
@@ -12,7 +12,7 @@ aspectRatio :: Float
 aspectRatio = 16.0 / 9.0
 
 imgWidth :: Int
-imgWidth = 504
+imgWidth = 720
 
 imgHeight :: Int
 imgHeight = let h = ((fromIntegral imgWidth) / aspectRatio) in

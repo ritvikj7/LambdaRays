@@ -28,7 +28,7 @@ kS = 0.5
 -- ambientColor = Vec3f 0.025 0.0 0.15
 
 drawBackground :: (Float, Float) -> Vec3
-drawBackground (_, y) = vecLerp (Vec3f 0.5 0.7 1.0) (Vec3f 1.0 1.0 1.0) (y / (fromIntegral imgHeight)) -- (Vec3f 0.005 0.005 0.02) (Vec3f 0.0 0.0 0.0)
+drawBackground (_, y) = vecLerp (Vec3f 0.5 0.7 1.0) (Vec3f 1.0 1.0 1.0) (y / (fromIntegral imgHeight))
 
 shadeSphere :: (Float, Float) -> Vec3 -> (Vec3, SphereRecord, Vec3) -> Int -> Vec3
 shadeSphere (x,y) incidentRay (normal, sphere, hitPoint) depth = let shadowRay = vecNormalize ((posLight light1) - hitPoint)
