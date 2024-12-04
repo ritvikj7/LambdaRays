@@ -47,6 +47,7 @@ To run the MVP, all you need to do is run
 - `stack build`
 - `stack run`
 - And then the output will be written out to the 'output.png'
+- **IMPORTANT:** If you don't want to wait long for a higher-quality render, I suggest changing `imgWidth` to something like `400` or `540` so the program completes faster: [Here is where you can do that in the code](https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/91b40dbcad3a81c419238e82af0c12535f3e9a44/haskell/src/Camera.hs#L18)
 
 You can also control certain parameters like the image resolution, samples per pixel (spp), and number of child rays.
 
