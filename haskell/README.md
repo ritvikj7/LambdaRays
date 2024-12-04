@@ -1,8 +1,8 @@
-# CPSC 312 Project - MVP README
+# CPSC 312 Project - Minimum Viable Product
 
 # LambdaRays
 
-LambdaRays will be a renderer that creates realistic images using ray tracing, a technique that simulates how light behaves in the real world. By tracing rays from a virtual camera (i.e from a certain perspective), it will render simple shapes with accurate lighting, shadows, and reflections, producing high-quality, detailed graphics. The goal is to have visually appealing images.
+LambdaRays is a renderer that creates realistic images using ray tracing, a technique that simulates how light behaves in the real world. By tracing rays from a virtual camera (i.e from a certain perspective), it renders simple shapes with accurate lighting, shadows, and reflections, producing high-quality, detailed graphics. It's goal is to have visually appealing images.
 
 This project is in fulfillment of the [CPSC 312 2024W1 project requirements](https://steven-wolfman.github.io/cpsc-312-website-2024W1/project.html).
 
@@ -28,7 +28,7 @@ We call ourselves: **The Good, The Bad, The Ugly**.
 
 ---
 
-## How the MVP fulfils our proposal and links to MVP code
+## How the MVP fulfils our proposal and links to MVP code?
 
 Our MVP initially outlined fundamental features typical of a basic Whitted-style ray tracer. These features are intentionally simplified compared to those found in production-grade renderers, lacking advanced effects such as soft shadows, post-processing (bloom, tone mapping, depth-of-field), industry-standard BSDF models like GGX and the Disney BSDF, and comprehensive global illumination.
 
@@ -40,15 +40,16 @@ Here is the link to the image support code: https://github.students.cs.ubc.ca/xy
 - For our 3rd feature, we outlined that we wanted **”Basic Shading Support”**. We have essentially accomplished this by adding a very well-established BRDF called Blinn-Phong for applying specular, Lambertian Reflectance for applying diffuse, and simple ambient colour to our shading of non-metallic (matte) surfaces. While not as physically-based as something like GGX, it is a very strong and effective shading model that accomplishes our needs for the MVP. Here is the link to the code: https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/dbe3946e72d6ba6edada83e0806f6ceb2e867e4d/haskell/src/PixelShader.hs#L62-L76
 - For our last feature, we outlined that we wanted **”Primitive shadow ray support”**. We have accomplished that by adding a `shadowRay` query into our `shadeSphere` function. We check for intersections from this `shadowRay` to every other scene object (excluding itself to avoid self-intersection to avoid shadow acne) to see if the pixel is occluded from the light. If it is, we shade it the ambient colour, otherwise, we shade it as if it were exposed to light. Here is the link to the code: https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/dbe3946e72d6ba6edada83e0806f6ceb2e867e4d/haskell/src/PixelShader.hs#L33-L45
 
-## How to run the MVP
+### How to run the MVP:
 
 To run the MVP, all you need to do is run
 - `stack build`
 - `stack run`
 - And then the output will be written out to the 'output.png'
 
-You can also certain parameters like the image resolution, samples per pixel (spp), and number of child rays.
-To adjust these parameters, you can go into [src/Camera.hs](https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/d31e67dc95db46f7276bd3723dc53987f3728ff9/haskell/src/Camera.hs#L6) and adjust [spp](https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/d31e67dc95db46f7276bd3723dc53987f3728ff9/haskell/src/Camera.hs#L6) to 5-15 and also adjust [imgWidth](https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/d31e67dc95db46f7276bd3723dc53987f3728ff9/haskell/src/Camera.hs#L15) to be something higher resolution (like 720 or 1080). You can also adjust [rayDepth](https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/d31e67dc95db46f7276bd3723dc53987f3728ff9/haskell/src/PixelShader.hs#L88) to be something higher than 3 (e.g. 5) if you want better inter-reflections, albeit I haven't really tested if it create much better results so your mileage may vary.
+You can also control certain parameters like the image resolution, samples per pixel (spp), and number of child rays.
+
+To adjust these parameters, you can go into [src/Camera.hs](https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/d31e67dc95db46f7276bd3723dc53987f3728ff9/haskell/src/Camera.hs#L6) and adjust [spp (samples per pixles)](https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/d31e67dc95db46f7276bd3723dc53987f3728ff9/haskell/src/Camera.hs#L6) to 5-15 and also adjust [imgWidth](https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/d31e67dc95db46f7276bd3723dc53987f3728ff9/haskell/src/Camera.hs#L15) to be something higher resolution (like 720 or 1080). You can also adjust [rayDepth](https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/d31e67dc95db46f7276bd3723dc53987f3728ff9/haskell/src/PixelShader.hs#L88) to be something higher than 3 (e.g. 5) if you want better inter-reflections, albeit we haven't really tested if it create much better results so your mileage may vary.
 
 Note: I would not go beyond the parameters I specified given it will even take a long time at `720p` at `spp = 5` so be prepared to wait a long time if you choose to do this.
 
