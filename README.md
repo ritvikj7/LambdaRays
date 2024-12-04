@@ -16,7 +16,14 @@ Our team is:
 
 We call ourselves: **The Good, The Bad, The Ugly**.
 
----
+## Link to new README.md and demo
+
+- [Link to new README.md](haskell/README.md)
+  - Takes you to the new README.md file that walksthrough the MVP in-detail
+- [Link to the demo (PLACEHOLDER switch this out)](https://www.youtube.com/)
+  - Takes you to the demo video illustrating the functionality of the MVP.
+
+
 ## Acknowledgments
 
 We surely built on the work of others! Here are resources and people we got support from:
@@ -81,6 +88,8 @@ Another strength of Haskell is of its very expressive type system. With ADTs, Re
 
 ---
 ## Proof of Concept
+
+### DISCLAIMER: The proof of concept no longer works as we have repurposed the project to now use offline rendering to images instead of real-time rendering to the ASCII terminal.
 
 Our proof-of-concept demonstrates very basic raycasting behaviour, which is one step below ray tracing. It simulates
 - Creating a camera https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/main/haskell/src/Lib.hs#L71

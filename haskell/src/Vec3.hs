@@ -67,5 +67,6 @@ vecNormalize (Vec3f x y z) = if norm /= 0.0
                           where v = Vec3f x y z
                                 norm = vecLength v
 
+-- Credit: Got reflection formula from here: https://registry.khronos.org/OpenGL-Refpages/gl4/html/reflect.xhtml
 vecReflect :: Vec3 -> Vec3 -> Vec3
 vecReflect v n = v - ((2.0 * dot v n) *^ n)

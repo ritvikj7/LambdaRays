@@ -60,6 +60,7 @@ shadeReflectiveSphere (x,y) incidentRay (normal, sphere, hitPoint) depth = let r
                                                                                     in (Vec3f (albedoR * bx) (albedoG * by) (albedoB * bz)) -- Should add Hadamard product for vectors because this is tediouuuus
 
 -- Shade Non-Metallic surface using Blinn-Phong BRDF (yeah, I know it's not the 90s anymore but it's simple)
+-- Credit to Blinn-Phong BRDF from lectures in CPSC 314
 shadeNonMetalSphere :: (Vec3, SphereRecord, Vec3) -> Vec3
 shadeNonMetalSphere (normal, sphere, hitPoint) = let shadowRay = vecNormalize ((posLight light1) - hitPoint)
                                                      view = vecNormalize (cameraPos - hitPoint)
@@ -84,7 +85,7 @@ samplePixel (x, y) numSamples = let (offsetX, offsetY) = generatePixelOffset (fr
                                   in if (tSphere >= 0.0)
                                      then let (Vec3f nx ny nz) = (computeNormal intersectedSphereRecord ray cameraPos)
                                               hitPoint = getRayAtT cameraPos tSphere ray
-                                              rayDepth = 5
+                                              rayDepth = 3
                                           in shadeSphere (offsetX, offsetY) ray ((Vec3f nx ny nz), sphere, hitPoint) rayDepth + (samplePixel (x, y) (numSamples - 1))
                                      else drawBackground (offsetX, offsetY) + (samplePixel (x, y) (numSamples - 1))
 

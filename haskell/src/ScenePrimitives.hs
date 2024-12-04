@@ -17,8 +17,10 @@ data SphereRecord = Sphere { position :: Vec3, radius :: Float, material :: Mate
   deriving (Show, Eq)
 
 listOfSpheres :: [SphereRecord]
-listOfSpheres = [Sphere { position = Vec3f 0.0 0.0 (-focalLen - 1), radius = 0.5, material = NonMetal, albedo = Vec3f 1.0 0.0 0.05}, Sphere { position = Vec3f 1.25 0.1 (-focalLen - 1), radius = 0.35, material = NonMetal, albedo = (Vec3f 0.2 0.8 0.2)},
-                 Sphere { position = Vec3f (-1.5) 0.0 (-focalLen - 1), radius = 0.6, material = Metal, albedo = (Vec3f 0.8 0.8 0.8)}, Sphere { position = Vec3f 0.0 (-100.5) (-focalLen), radius = 100, material = NonMetal, albedo = Vec3f 0.8 0.8 0.0 },
+listOfSpheres = [Sphere { position = Vec3f 0.0 0.0 (-focalLen - 1), radius = 0.5, material = NonMetal, albedo = Vec3f 1.0 0.0 0.05},
+                 Sphere { position = Vec3f 1.25 0.1 (-focalLen - 1), radius = 0.35, material = NonMetal, albedo = (Vec3f 0.2 0.8 0.2)},
+                 Sphere { position = Vec3f (-1.5) 0.0 (-focalLen - 1), radius = 0.6, material = Metal, albedo = (Vec3f 0.8 0.8 0.8)},
+                 Sphere { position = Vec3f 0.0 (-100.5) (-focalLen), radius = 100, material = NonMetal, albedo = Vec3f 0.8 0.8 0.0 },
                  Sphere { position = Vec3f 1.0 0.5 0.4, radius = 0.8, material = NonMetal, albedo = (Vec3f 0.0 0.1 0.9)}] --,Sphere {position = Vec3f (0.0) 1.25 (-focalLen - 1.075), radius = 0.5, material = Metal, albedo = (Vec3f 0.8 0.8 0.8)}] This sphere adds top reflective sphere
 
 nullSphere :: SphereRecord
@@ -32,17 +34,18 @@ nullPlane :: PlaneRecord
 nullPlane = Plane { pointPlane = Vec3f 0xDEADBEEF 0xDEADBEEF 0xDEADBEEF, normalPlane = Vec3f 0xDEADBEEF 0xDEADBEEF 0xDEADBEEF }
 
 -- Intersect functions --
+-- Credit to closed-form for ray-sphere intersection math from https://rotgers.io/posts/ray-sphere-intersection/
 instance SceneObject SphereRecord where
   intersect :: Vec3 -> Vec3 -> SphereRecord -> Float
   intersect rayDir rayOrigin sphere = if d >= 0
-                            then ((-b) - (sqrt d)) / (2*vdotv)
-                            else -1.0
-                            where oc = (rayOrigin - (position sphere))
-                                  v = rayDir
-                                  vdotv = v `dot` v
-                                  r = (radius sphere)
-                                  b = 2 * (v `dot` oc)
-                                  d = b^2 - 4*vdotv*((oc `dot` oc) - r*r)
+                                      then ((-b) - (sqrt d)) / (2*vdotv)
+                                      else -1.0
+                                      where oc = (rayOrigin - (position sphere))
+                                            v = rayDir
+                                            vdotv = v `dot` v
+                                            r = (radius sphere)
+                                            b = 2 * (v `dot` oc)
+                                            d = b^2 - 4*vdotv*((oc `dot` oc) - r*r)
   nullObject :: SphereRecord
   nullObject = nullSphere
 
