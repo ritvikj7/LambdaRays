@@ -84,6 +84,25 @@ Following is the smaller chunk of code and a little explanation on what it is do
 
 Thus, this is the guide on Camera.hs file and what it is implementing.
 
+Here is the code for the [PixelShader.hs](https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/dbe3946e72d6ba6edada83e0806f6ceb2e867e4d/haskell/src/PixelShader.hs) file:
+This module is doing a job akin to a fragment shader in a typical GPU-driven renderer with the caveat that we are doing recursive sampling. For a given pixel in the framebuffer, we take `spp` samples offset by some random amount that is eventually averaged out to find the final colour. Each sample has a ray sent toward the pixel and queries whether it intersects any spheres and shades the colour based on that.
+1.  https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/dbe3946e72d6ba6edada83e0806f6ceb2e867e4d/haskell/src/PixelShader.hs#L30-L31
+	  This chunk of code draws the background gradient for areas not intersected by objects. This creates a gradient from blue (sky) to white based on the y-coordinate of the ray
+2. https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/dbe3946e72d6ba6edada83e0806f6ceb2e867e4d/haskell/src/PixelShader.hs#L47-L60
+	  This chunk of code shades a reflective sphere by tracing the reflected ray into the environment
+3. https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/dbe3946e72d6ba6edada83e0806f6ceb2e867e4d/haskell/src/PixelShader.hs#L78-L90
+	  This chunk of code takes `spp` samples within the pixel offset by `(offsetX, offsetY)` (random at every sample), and decides whether to shade based on if it intersects a sphere or the sky recursively per sample.
+
+Thus, this is the guide on PixelShader.hs file and what it's implementing
+
+Here is the code for the [ScenePrimitives.hs](https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/dbe3946e72d6ba6edada83e0806f6ceb2e867e4d/haskell/src/ScenePrimitives.hs) file:
+This module responsible for finding whther any of our rays intersect with any of objects in our scene. It includes functions to determine whether a ray intersects a sphere and at what parameter `t` is hits it, and also does visibility determination by finding the object that's nearest to the camera
+1.  https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/dbe3946e72d6ba6edada83e0806f6ceb2e867e4d/haskell/src/ScenePrimitives.hs#L36-L50
+	  This chunk of code computes the closed-form intersection formula for a Ray-Sphere intersection and finds the `t` value that scales the ray direction vector enough to hit the sphere
+2. https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/dbe3946e72d6ba6edada83e0806f6ceb2e867e4d/haskell/src/ScenePrimitives.hs#L60-L65
+	  This chunk of code does visibility determination by finding the closest sphere (which ray that hit the sphere has the smallest `t` value) and returns that sphere as the closest. If the ray didn't intersect any sphere at all, we just return an erroneous result.
+
+
 
 ## A guide to our new learning
 
