@@ -76,6 +76,8 @@ Thus, this is the guide on Camera.hs file and what it is implementing.
 
 
 ## A guide to our new learning
-- Highlighting how the new learning is essential for your project/MVP
-- Direct links into parts of the code where the new learning was employed
-- Explanation of how the project benefits from the application of your new learning.
+
+One of the new learning areas that we learned during implementation of the MVP is using JuicyPixels library that helps in writing and generating the new images using the RGB list vectors. On to why this is an essential part of the project/MVP goes to the promises that we committed to implement in the MVP, which states that we are going to convert the list of vectors we get after calculating the interaction with all the objects, lights and camera with a particular ray and present the final output as a image rather than showing it in the text form in the terminal. Thus, here comes the JuicyPixels library which helps in converting the list of RGB vectors that each represent the pixel in an image and generate the corresponding image using the GenreateImage and also the WritePng functions and can also use many other in-built functions that supports multiple different files. For our implementation, we are using the JuicyPixels library’s built-in functions such as writePng and generateImage functions to generate the image as the png file type.
+https://github.students.cs.ubc.ca/xyzarman/CPSC312-Haskell-Project/blob/d3cb9a0ba16b048021c4762b6797f0bb7108099d/haskell/src/Utils.hs#L31-L34
+Talking about the benefits this new learning area has brought to the project/MVP is that is has made it easier for us to see the generated image which is much better than the text based image generation it has that is hard to see and also does not support the colors. Thus, using JuicyPixels has made it easier and available for us to show the image in more meaningful way that is understandable for the whole world and explains on what we need in real world as well.
+
