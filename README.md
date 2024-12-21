@@ -1,5 +1,7 @@
 # CPSC 312 Project
 
+[Link to the demo](https://youtu.be/Yvb3GtVKB5Y?si=NFWiHo3Mr2g9wP0j)
+
 # LambdaRays
 
 LambdaRays will be a renderer that creates realistic images using ray tracing, a technique that simulates how light behaves in the real world. By tracing rays from a virtual camera (i.e from a certain perspective), it will render simple shapes with accurate lighting, shadows, and reflections, producing high-quality, detailed graphics. The goal is to have visually appealing images.
@@ -20,8 +22,6 @@ We call ourselves: **The Good, The Bad, The Ugly**.
 
 - [Link to new README.md](haskell/README.md)
   - Takes you to the new README.md file that walksthrough the MVP in-detail
-- [Link to the demo](https://youtu.be/Yvb3GtVKB5Y?si=NFWiHo3Mr2g9wP0j)
-  - Takes you to the demo video illustrating the functionality of the MVP.
 
 
 ## Acknowledgments
